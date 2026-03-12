@@ -1,0 +1,117 @@
+[
+    {
+        "timestamp": "2026-03-10 14:40:32",
+        "type": "CRITICAL",
+        "message": "500 Internal Server Error at /about"
+    },
+    {
+        "timestamp": "2026-03-10 14:40:35",
+        "type": "WARNING",
+        "message": "404 Not Found at /login"
+    },
+    {
+        "timestamp": "2026-03-10 14:40:39",
+        "type": "WARNING",
+        "message": "404 Not Found at /login"
+    },
+    {
+        "timestamp": "2026-03-10 14:40:59",
+        "type": "WARNING",
+        "message": "404 Not Found at /api/data"
+    },
+    {
+        "timestamp": "2026-03-10 14:41:02",
+        "type": "CRITICAL",
+        "message": "500 Internal Server Error at /login"
+    },
+    {
+        "timestamp": "2026-03-10 14:53:20",
+        "type": "WARNING",
+        "message": "404 Not Found at /dashboard"
+    },
+    {
+        "timestamp": "2026-03-10 14:53:22",
+        "type": "WARNING",
+        "message": "404 Not Found at /about"
+    },
+    {
+        "timestamp": "2026-03-10 14:53:43",
+        "type": "WARNING",
+        "message": "404 Not Found at /login"
+    },
+    {
+        "timestamp": "2026-03-10 14:53:48",
+        "type": "WARNING",
+        "message": "404 Not Found at /dashboard"
+    },
+    {
+        "timestamp": "2026-03-10 14:53:51",
+        "type": "WARNING",
+        "message": "404 Not Found at /about"
+    },
+    {
+        "timestamp": "2026-03-10 14:54:02",
+        "type": "CRITICAL",
+        "message": "500 Internal Server Error at /home"
+    },
+    {
+        "timestamp": "2026-03-10 14:54:07",
+        "type": "WARNING",
+        "message": "404 Not Found at /login"
+    },
+    {
+        "timestamp": "2026-03-10 14:54:09",
+        "type": "WARNING",
+        "message": "404 Not Found at /api/data"
+    },
+    {
+        "timestamp": "2026-03-10 14:54:14",
+        "type": "CRITICAL",
+        "message": "500 Internal Server Error at /login"
+    },
+    {
+        "timestamp": "2026-03-10 14:54:14",
+        "type": "SECURITY_ALERT",
+        "message": "Potential Brute Force from 10.0.0.99"
+    },
+    {
+        "timestamp": "2026-03-10 14:54:18",
+        "type": "CRITICAL",
+        "message": "500 Internal Server Error at /about"
+    },
+    {
+        "timestamp": "2026-03-10 14:54:20",
+        "type": "SECURITY_ALERT",
+        "message": "Potential Brute Force from 192.168.1.250"
+    },
+    {
+        "timestamp": "2026-03-10 14:54:24",
+        "type": "WARNING",
+        "message": "404 Not Found at /home"
+    },
+    {
+        "timestamp": "2026-03-10 14:54:27",
+        "type": "CRITICAL",
+        "message": "500 Internal Server Error at /home"
+    },
+    {
+        "timestamp": "2026-03-10 14:54:33",
+        "type": "CRITICAL",
+        "message": "500 Internal Server Error at /login"
+    },
+    {
+        "timestamp": "2026-03-10 14:54:38",
+        "type": "WARNING",
+        "message": "404 Not Found at /api/data"
+    },
+    {
+        "timestamp": "2026-03-10 14:54:39",
+        "type": "SECURITY_ALERT",
+        "message": "Potential Brute Force from 192.168.1.10"
+    },
+    {
+        "timestamp": "2026-03-10 14:54:50",
+        "type": "CRITICAL",
+        "message": "500 Internal Server Error at /dashboard"
+    }
+]
