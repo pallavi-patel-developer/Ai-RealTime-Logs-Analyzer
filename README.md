@@ -103,7 +103,4 @@ graph TD
 
 ---
 
-##  License
-Distributed under the **MIT License**.
-
 Built with ❤️ by [Pallavi Patel Developer](https://github.com/pallavi-patel-developer)
