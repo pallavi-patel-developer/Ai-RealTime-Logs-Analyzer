@@ -83,7 +83,6 @@ def api_data():
 
 @app.route("/force-error", methods=["GET"])
 def force_error():
-    # This will trigger the global error handler
     result = 1 / 0 
     return "This won't be reached", 200
 
@@ -92,7 +91,6 @@ def handle_unexpected_error(e):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     tb = traceback.format_exc()
     
-    # Log the traceback so the analyzer can find it
     log_entry = f"{timestamp} | ERROR_TRACEBACK | {flask.request.path} | EXCEPTION: {str(e)}\n{tb}\n"
     
     with open(SERVER_LOG_FILE, "a") as f:
@@ -126,10 +124,8 @@ def log_request_info(response):
 
     return response
 
-# Disable default flask logging to keep server.log clean
 log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
 if __name__ == "__main__":
-    # Render will use Gunicorn to run 'app:app', but for local testing:
     app.run(host='0.0.0.0', port=3000)
