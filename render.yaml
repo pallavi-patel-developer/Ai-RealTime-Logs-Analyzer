@@ -3,11 +3,11 @@ services:
     name: ai-log-analyzer
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
+    startCommand: gunicorn app:app --workers 2 --threads 4
     envVars:
-      - key: EMAIL_SENDER
+      - key: RESEND_API_KEY
         sync: false
-      - key: EMAIL_PASSWORD
+      - key: CLINIC_EMAIL
         sync: false
-      - key: EMAIL_RECEIVER
-        sync: false
+      - key: WEB_CONCURRENCY # Render sets this, but we can override
+        value: 2

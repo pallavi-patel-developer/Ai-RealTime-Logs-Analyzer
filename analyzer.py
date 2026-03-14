@@ -1,8 +1,7 @@
 import os
 import re
 import time
-import smtplib
-from email.mime.text import MIMEText
+import resend
 from datetime import datetime
 
 # Configuration
@@ -10,27 +9,29 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE = os.path.join(BASE_DIR, "server.log")
 
 # These will be set in Render Environment Variables
-EMAIL_SENDER = os.environ.get("EMAIL_SENDER")
-EMAIL_PASSWORD = os.environ.get("EMAIL_PASSWORD") # App Password
-EMAIL_RECEIVER = os.environ.get("EMAIL_RECEIVER")
+def get_env_vars():
+    return os.environ.get("RESEND_API_KEY"), os.environ.get("CLINIC_EMAIL")
 
 def send_alert_email(subject, body):
-    if not all([EMAIL_SENDER, EMAIL_PASSWORD, EMAIL_RECEIVER]):
-        print("DEBUG: Email credentials missing. Notification not sent.")
+    resend_api_key, clinic_email = get_env_vars()
+    if not resend_api_key or not clinic_email:
+        print("DEBUG: Resend API credentials or Clinic Email missing. Notification not sent.")
         return
 
     try:
-        msg = MIMEText(body)
-        msg['Subject'] = subject
-        msg['From'] = EMAIL_SENDER
-        msg['To'] = EMAIL_RECEIVER
+        resend.api_key = resend_api_key
+        
+        params = {
+            "from": "AI Log Analyzer <onboarding@resend.dev>",
+            "to": [clinic_email],
+            "subject": subject,
+            "html": f"<pre>{body}</pre>",
+        }
 
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-            server.login(EMAIL_SENDER, EMAIL_PASSWORD)
-            server.sendmail(EMAIL_SENDER, EMAIL_RECEIVER, msg.as_string())
-        print(f"SUCCESS: Alert email sent to {EMAIL_RECEIVER}")
+        email = resend.Emails.send(params)
     except Exception as e:
-        print(f"ERROR: Failed to send email: {e}")
+        print(f"ERROR")
+
 
 def monitor_logs():
     print("STARTING: Background Log Monitor...")
@@ -52,6 +53,29 @@ def monitor_logs():
                 time.sleep(1)
                 continue
 
+            # Check for multi-line traceback starts
+            if " | ERROR_TRACEBACK | " in line:
+                try:
+                    path = line.split(" | ")[2]
+                    traceback_content = line
+                    # Read next lines until we hit a signature of a new log entry
+                    while True:
+                        next_line = f.readline()
+                        if not next_line:
+                            time.sleep(0.1)
+                            next_line = f.readline()
+                            if not next_line: break
+                        traceback_content += next_line
+                        # Stop if we see a new timestamp or a separator
+                        if " | " in next_line and re.match(r"\d{4}-\d{2}-\d{2}", next_line):
+                             break
+                    
+                    subject = f" PRODUCTION ALERT: Traceback in {path}"
+                    send_alert_email(subject, traceback_content)
+                except Exception as e:
+                    print(f"DEBUG: Error parsing traceback block: {e}")
+                continue
+
             match = log_pattern.match(line.strip())
             if match:
                 timestamp, ip, method, path, status, message = match.groups()
@@ -59,13 +83,13 @@ def monitor_logs():
 
                 # TRIGGER: Critical Server Error
                 if status == 500:
-                    subject = f"🚨 CRITICAL: Server Error (500) detected!"
+                    subject = f" CRITICAL: Server Error (500) detected!"
                     body = f"Time: {timestamp}\nIP: {ip}\nMethod: {method}\nPath: {path}\nLog: {line}"
                     send_alert_email(subject, body)
 
                 # TRIGGER: Potential Security Threat (Example: multiple 404s or unauthorized)
                 if status == 401:
-                    subject = f"⚠️ SECURITY: Unauthorized Access Attempt"
+                    subject = f" SECURITY: Unauthorized Access Attempt"
                     body = f"An unauthorized attempt was detected!\n\nDetails:\nTime: {timestamp}\nIP: {ip}\nPath: {path}"
                     send_alert_email(subject, body)
 

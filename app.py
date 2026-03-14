@@ -2,7 +2,23 @@ import flask
 import os
 import threading
 import logging
+import traceback
+import sys
 from datetime import datetime
+from dotenv import load_dotenv
+
+# For cross-platform file locking (Production safety)
+try:
+    if os.name == 'nt':
+        import msvcrt
+    else:
+        import fcntl
+except ImportError:
+    msvcrt = fcntl = None
+
+# Load environment variables BEFORE importing analyzer
+load_dotenv()
+
 from analyzer import monitor_logs
 
 app = flask.Flask(__name__)
@@ -10,19 +26,40 @@ app = flask.Flask(__name__)
 # Use relative path for portability (Render/Windows)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 SERVER_LOG_FILE = os.path.join(BASE_DIR, "server.log")
+LOCK_FILE = os.path.join(BASE_DIR, "monitor.lock")
 
-# Start the background log monitor thread
-# It will run 24/7 scanning the server.log for errors
-monitor_thread = threading.Thread(target=monitor_logs, daemon=True)
-monitor_thread.start()
+def acquire_lock():
+    """Ensures only one process runs the monitor thread."""
+    try:
+        f = open(LOCK_FILE, 'w')
+        if os.name == 'nt':
+            if msvcrt:
+                msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
+        else:
+            if fcntl:
+                fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return f
+    except (IOError, ImportError):
+        return None
+
+# Start the background log monitor thread with a lock
+lock_f = acquire_lock()
+if lock_f:
+    monitor_thread = threading.Thread(target=monitor_logs, daemon=True)
+    monitor_thread.start()
+    print("INFO: Log Monitor Started (Process Lock Acquired).")
+else:
+    print("INFO: Log Monitor skipped (Another process is monitoring).")
+
 
 @app.route("/", methods=["GET"])
 def home():
-    return "🚀 Log Analyzer Server is Running!"
+    return " Log Analyzer Server is Running!"
 
 @app.route("/about", methods=["GET"])
 def about():
-    return "About Page"    
+    # Simulated Server Error for testing alerts
+    return "Simulated Server Error on About Page!", 500
 
 @app.route("/dashboard", methods=["GET"])
 def dashboard():
@@ -46,8 +83,22 @@ def api_data():
 
 @app.route("/force-error", methods=["GET"])
 def force_error():
-    # Use this to test the Email alert!
-    return "Simulated Server Error!", 500
+    # This will trigger the global error handler
+    result = 1 / 0 
+    return "This won't be reached", 200
+
+@app.errorhandler(Exception)
+def handle_unexpected_error(e):
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    tb = traceback.format_exc()
+    
+    # Log the traceback so the analyzer can find it
+    log_entry = f"{timestamp} | ERROR_TRACEBACK | {flask.request.path} | EXCEPTION: {str(e)}\n{tb}\n"
+    
+    with open(SERVER_LOG_FILE, "a") as f:
+        f.write(log_entry)
+        
+    return "Internal Server Error!", 500
 
 @app.after_request
 def log_request_info(response):
@@ -81,4 +132,4 @@ log.setLevel(logging.ERROR)
 
 if __name__ == "__main__":
     # Render will use Gunicorn to run 'app:app', but for local testing:
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=3000)
