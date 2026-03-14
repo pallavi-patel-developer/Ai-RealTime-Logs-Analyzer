@@ -1,4 +1,5 @@
 import flask
+from flask import render_template
 import os
 import threading
 import logging
@@ -19,6 +20,7 @@ except ImportError:
 # Load environment variables BEFORE importing analyzer
 load_dotenv()
 
+from werkzeug.exceptions import HTTPException
 from analyzer import monitor_logs
 
 app = flask.Flask(__name__)
@@ -54,7 +56,7 @@ else:
 
 @app.route("/", methods=["GET"])
 def home():
-    return " Log Analyzer Server is Running!"
+    return render_template("index.html")
 
 @app.route("/about", methods=["GET"])
 def about():
@@ -88,6 +90,11 @@ def force_error():
 
 @app.errorhandler(Exception)
 def handle_unexpected_error(e):
+    # If the error is an HTTPException (like 404), we should NOT treat it as a crash
+    if isinstance(e, HTTPException):
+        return e
+
+    # Otherwise, it's a real code crash (500)
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     tb = traceback.format_exc()
     
@@ -128,4 +135,4 @@ log = logging.getLogger('werkzeug')
 log.setLevel(logging.ERROR)
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=3000)
+    app.run(host='0.0.0.0', port=5000)

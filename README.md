@@ -1,6 +1,6 @@
 #  AI Real-Time Logs Analyzer
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://ai-realtime-logs-analyzer.onrender.com)
 
 A production-grade, real-time log monitoring and alerting system built with **Python**, **Flask**, and **Resend**. This tool scans your server logs in real-time and sends instant email alerts for critical errors or security threats, complete with **full stack tracebacks**.
 
