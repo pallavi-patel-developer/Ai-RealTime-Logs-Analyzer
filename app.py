@@ -44,6 +44,13 @@ def acquire_lock():
     except (IOError, ImportError):
         return None
 
+def get_client_ip():
+    """Extracts the real client IP, considering proxies like Render."""
+    if flask.request.headers.get('X-Forwarded-For'):
+        # Usually the first IP in the list is the original client
+        return flask.request.headers.get('X-Forwarded-For').split(',')[0].strip()
+    return flask.request.remote_addr
+
 # Start the background log monitor thread with a lock
 lock_f = acquire_lock()
 if lock_f:
@@ -108,7 +115,7 @@ def handle_unexpected_error(e):
 @app.after_request
 def log_request_info(response):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    ip = flask.request.remote_addr
+    ip = get_client_ip()
     method = flask.request.method
     path = flask.request.path
     status_code = response.status_code
